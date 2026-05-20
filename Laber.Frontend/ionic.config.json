@@ -1,0 +1,7 @@
+{
+  "name": "Laber.Frontend",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

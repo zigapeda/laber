@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="Laber.Api/Laber.Api.csproj" />
+  <Project Path="Laber.AppHost/Laber.AppHost.csproj" />
+  <Project Path="Laber.Bouncer/Laber.Bouncer.csproj" />
+  <Project Path="Laber.ServiceDefaults/Laber.ServiceDefaults.csproj" />
+  <Project Path="Laber.Shared/Laber.Shared.csproj" />
+</Solution>
