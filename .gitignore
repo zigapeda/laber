@@ -1,0 +1,25 @@
+# .NET
+**/bin/
+**/obj/
+**/data/
+*.user
+*.suo
+.vs/
+
+# Node / Ionic
+**/node_modules/
+Laber.Frontend/www/
+Laber.Frontend/.angular/
+
+# SQLite
+*.db
+*.db-shm
+*.db-wal
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.swp
