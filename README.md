@@ -1,45 +1,42 @@
 # Laber
 
-IRC-Bouncer und REST-API in **einer** .NET-Anwendung. Nachrichten werden als Plain-Text pro Kanal und Jahr gespeichert (`data/<kanal>/<jahr>.txt`). Connect/Disconnect-Ereignisse bleiben nur kurz im RAM.
+IRC-Bouncer und REST-API: **Laber.Api** hostet HTTP + SSE, **Laber.Bouncer** enthält nur die IRC-Logik (Class Library, eingebunden in die Api). Entwicklung startet alles über **Aspire AppHost**.
 
-**Frontend:** Ionic 8 + Angular 21 PWA
+Nachrichten: Plain-Text pro Kanal und Jahr unter `data/<kanal>/<jahr>.txt`. Connect/Disconnect nur im RAM.
 
 ## Struktur
 
 ```
 Laber.slnx
-Laber/                 # eine Executable: IRC-Bouncer + REST-API
-Laber.Shared/          # DTOs, Dateiformat, Kanal-Pfade
+Laber.AppHost/         # Aspire: Api + Frontend
+Laber.Api/             # eine Executable (HTTP, SSE, speichert Nachrichten)
+Laber.Bouncer/         # IRC-Logik (kein Program.cs)
+Laber.Shared/          # DTOs, IMessageStore, Dateiformat
+Laber.ServiceDefaults/ # Aspire-Defaults
 Laber.Frontend/        # Ionic PWA
-data/                  # Nachrichten-Logfiles (nicht in Git)
+data/                  # Nachrichten-Logfiles
 ```
 
-## Dateiformat
-
-Pro Zeile eine Nachricht (Tab-getrennt):
-
-```
-2025-05-20T14:30:45.1234567+00:00\tsender\ttext
-```
-
-Sonderzeichen im Text werden escaped (`\n`, `\t`, `\\`).
-
-Beispiel-Pfad: `data/laber/2025.txt` für Kanal `#laber`.
-
-## Voraussetzungen
-
-- [.NET 10 SDK](https://dotnet.microsoft.com/download)
-- [Node.js 22+](https://nodejs.org/) (nur für Frontend)
-
-## Start
+## Start (Entwicklung)
 
 ```bash
-dotnet run --project Laber
+dotnet run --project Laber.AppHost
 ```
 
-Standard-URL: `http://localhost:5292`
+Nur Backend:
 
-### IRC (`Laber/appsettings.json`)
+```bash
+dotnet run --project Laber.Api
+```
+
+## Echtzeit-Nachrichten (SSE)
+
+`GET /api/messages/stream` — alle Kanäle  
+`GET /api/messages/stream?channel=laber` — ein Kanal
+
+Frontend nutzt `EventSource` statt Polling.
+
+## IRC (`Laber.Api/appsettings.json`)
 
 ```json
 "Irc": {
@@ -51,27 +48,14 @@ Standard-URL: `http://localhost:5292`
 }
 ```
 
-### Frontend
-
-```bash
-cd Laber.Frontend
-npm install
-npm start
-```
-
-`proxy.conf.json` leitet `/api` an `http://localhost:5292` weiter.
-
-## API
+## API (Auszug)
 
 | Endpoint | Beschreibung |
 |----------|--------------|
-| `GET /api/status` | aktueller IRC-Verbindungsstatus (RAM) |
-| `GET /api/events` | Connect/Disconnect der letzten 24h (RAM, max. 200) |
-| `GET /api/channels?sinceId=` | Kanäle aus dem `data/`-Verzeichnis |
-| `GET /api/messages/{channel}?limit=` | neueste Nachrichten (Standard 100) |
-| `GET /api/messages/{channel}?beforeId=` | ältere Nachrichten (Endless Scroll) |
-| `GET /api/messages/{channel}?afterId=` | neuere Nachrichten seit ID |
-| `GET /api/messages?afterId=` | neue Nachrichten aller Kanäle |
+| `GET /api/messages/stream` | SSE: neue Nachrichten sofort |
+| `GET /api/messages/{channel}?limit=` | Verlauf (Endless Scroll: `beforeId`) |
+| `GET /api/status` | Verbindungsstatus (RAM) |
+| `GET /api/channels` | Kanalliste aus `data/` |
 
 ## Build
 

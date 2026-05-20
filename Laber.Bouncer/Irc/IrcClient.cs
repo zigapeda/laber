@@ -1,8 +1,9 @@
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Text;
+using Microsoft.Extensions.Logging;
 
-namespace Laber.Irc;
+namespace Laber.Bouncer.Irc;
 
 public sealed class IrcClient : IAsyncDisposable
 {

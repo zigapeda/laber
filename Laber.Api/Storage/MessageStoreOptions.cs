@@ -1,4 +1,4 @@
-namespace Laber.Storage;
+namespace Laber.Api.Storage;
 
 public sealed class MessageStoreOptions
 {

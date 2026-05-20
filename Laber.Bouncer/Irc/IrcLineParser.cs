@@ -1,4 +1,4 @@
-namespace Laber.Irc;
+namespace Laber.Bouncer.Irc;
 
 internal static class IrcLineParser
 {

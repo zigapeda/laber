@@ -1,8 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Subscription, interval, switchMap } from 'rxjs';
 import { MessageDto } from '../../core/models/laber.models';
 import { LaberApiService } from '../../core/services/laber-api.service';
+import { LaberSseService } from '../../core/services/laber-sse.service';
 
 @Component({
   selector: 'app-channel-detail',
@@ -16,26 +16,26 @@ export class ChannelDetailPage implements OnInit, OnDestroy {
   loadingOlder = false;
   hasMoreHistory = true;
 
-  private pollSub?: Subscription;
+  private disconnectSse?: () => void;
   private readonly pageSize = 100;
 
   constructor(
     private readonly route: ActivatedRoute,
-    private readonly api: LaberApiService
+    private readonly api: LaberApiService,
+    private readonly sse: LaberSseService
   ) {}
 
   ngOnInit(): void {
     this.channel = this.route.snapshot.paramMap.get('channel') ?? '';
     this.loadLatest();
-    this.pollSub = interval(15000)
-      .pipe(switchMap(() => this.api.getMessages(this.channelName(), { afterId: this.newestId(), limit: this.pageSize })))
-      .subscribe({
-        next: (incoming) => this.mergeNewer(incoming),
-      });
+    this.disconnectSse = this.sse.connectMessages(
+      (message) => this.mergeNewer([message]),
+      this.channelName()
+    );
   }
 
   ngOnDestroy(): void {
-    this.pollSub?.unsubscribe();
+    this.disconnectSse?.();
   }
 
   loadLatest(event?: { target: { complete: () => void } }): void {
@@ -97,9 +97,5 @@ export class ChannelDetailPage implements OnInit, OnDestroy {
 
   private channelName(): string {
     return this.channel.startsWith('#') ? this.channel : `#${this.channel}`;
-  }
-
-  private newestId(): number {
-    return this.messages[this.messages.length - 1]?.id ?? 0;
   }
 }

@@ -1,53 +1,50 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, interval, switchMap, tap } from 'rxjs';
+import { Injectable, OnDestroy } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 import { MessageDto } from '../models/laber.models';
-import { LaberApiService } from './laber-api.service';
+import { LaberSseService } from './laber-sse.service';
 import { SettingsService } from './settings.service';
 
 @Injectable({ providedIn: 'root' })
-export class SyncService {
+export class SyncService implements OnDestroy {
   private readonly messagesSubject = new BehaviorSubject<MessageDto[]>([]);
   readonly messages$ = this.messagesSubject.asObservable();
 
+  private disconnectSse?: () => void;
+
   constructor(
-    private readonly api: LaberApiService,
+    private readonly sse: LaberSseService,
     private readonly settings: SettingsService
   ) {}
 
-  startPolling(intervalMs = 15000): void {
-    interval(intervalMs)
-      .pipe(
-        switchMap(() => this.api.getAllMessages(this.settings.getLastMessageId())),
-        tap((messages) => this.mergeMessages(messages))
-      )
-      .subscribe();
-  }
-
-  refresh(): void {
-    this.api.getAllMessages(this.settings.getLastMessageId()).subscribe((messages) => {
-      this.mergeMessages(messages);
-    });
-  }
-
-  private mergeMessages(incoming: MessageDto[]): void {
-    if (!incoming.length) {
+  connect(): void {
+    if (this.disconnectSse) {
       return;
     }
 
+    this.disconnectSse = this.sse.connectMessages((message) => this.mergeMessage(message));
+  }
+
+  ngOnDestroy(): void {
+    this.disconnect();
+  }
+
+  disconnect(): void {
+    this.disconnectSse?.();
+    this.disconnectSse = undefined;
+  }
+
+  private mergeMessage(message: MessageDto): void {
     const current = [...this.messagesSubject.value];
-    const known = new Set(current.map((m) => m.id));
-    for (const message of incoming) {
-      if (!known.has(message.id)) {
-        current.push(message);
-      }
+    if (current.some((m) => m.id === message.id)) {
+      return;
     }
 
+    current.push(message);
     current.sort((a, b) => a.id - b.id);
     this.messagesSubject.next(current);
 
-    const maxId = current[current.length - 1]?.id ?? 0;
-    if (maxId > 0) {
-      this.settings.setLastMessageId(maxId);
+    if (message.id > this.settings.getLastMessageId()) {
+      this.settings.setLastMessageId(message.id);
     }
   }
 }

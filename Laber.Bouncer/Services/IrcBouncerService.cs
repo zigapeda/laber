@@ -1,8 +1,11 @@
-using Laber.Irc;
-using Laber.Storage;
+using Laber.Bouncer.Irc;
+using Laber.Shared.Storage;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Laber.Services;
+namespace Laber.Bouncer.Services;
 
 public sealed class IrcBouncerService : BackgroundService
 {
@@ -26,7 +29,7 @@ public sealed class IrcBouncerService : BackgroundService
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var status = scope.ServiceProvider.GetRequiredService<ConnectionStatusService>();
-            var store = scope.ServiceProvider.GetRequiredService<MessageStore>();
+            var store = scope.ServiceProvider.GetRequiredService<IMessageStore>();
             var logger = scope.ServiceProvider.GetRequiredService<ILogger<IrcClient>>();
             await using var client = new IrcClient(_options, logger);
 

@@ -24,7 +24,7 @@ export class ChannelsPage implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.sync.startPolling();
+    this.sync.connect();
     this.refresh();
   }
 
@@ -49,7 +49,6 @@ export class ChannelsPage implements OnInit {
       },
     });
 
-    this.sync.refresh();
   }
 
   openChannel(channel: ChannelDto): void {

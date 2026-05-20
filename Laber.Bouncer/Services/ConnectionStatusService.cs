@@ -1,9 +1,9 @@
 using System.Collections.Concurrent;
-using Laber.Irc;
+using Laber.Bouncer.Irc;
 using Laber.Shared.Dtos;
 using Microsoft.Extensions.Options;
 
-namespace Laber.Services;
+namespace Laber.Bouncer.Services;
 
 public sealed class ConnectionStatusService
 {

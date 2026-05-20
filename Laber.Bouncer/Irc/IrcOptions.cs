@@ -1,4 +1,4 @@
-namespace Laber.Irc;
+namespace Laber.Bouncer.Irc;
 
 public sealed class IrcOptions
 {

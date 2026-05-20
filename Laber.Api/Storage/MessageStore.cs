@@ -1,18 +1,21 @@
 using System.Collections.Concurrent;
+using Laber.Api.Streaming;
 using Laber.Shared.Dtos;
 using Laber.Shared.Storage;
 
-namespace Laber.Storage;
+namespace Laber.Api.Storage;
 
-public sealed class MessageStore
+public sealed class MessageStore : IMessageStore
 {
     private readonly string _dataDirectory;
+    private readonly MessageStreamService _stream;
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _fileLocks = new();
     private readonly ConcurrentDictionary<string, int> _lineCounts = new();
 
-    public MessageStore(MessageStoreOptions options)
+    public MessageStore(MessageStoreOptions options, MessageStreamService stream)
     {
         _dataDirectory = Path.GetFullPath(options.DataDirectory);
+        _stream = stream;
         Directory.CreateDirectory(_dataDirectory);
     }
 
@@ -35,7 +38,9 @@ public sealed class MessageStore
             var line = MessageLineFormat.Format(receivedAt, sender, text);
             await File.AppendAllTextAsync(path, line + Environment.NewLine, cancellationToken);
             var id = MessageId.Encode(year, lineNumber);
-            return new MessageDto(id, normalized, sender, text, receivedAt);
+            var message = new MessageDto(id, normalized, sender, text, receivedAt);
+            _stream.Publish(message);
+            return message;
         }
         finally
         {

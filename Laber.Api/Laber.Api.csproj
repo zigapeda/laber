@@ -8,6 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Laber.Bouncer\Laber.Bouncer.csproj" />
+    <ProjectReference Include="..\Laber.ServiceDefaults\Laber.ServiceDefaults.csproj" />
     <ProjectReference Include="..\Laber.Shared\Laber.Shared.csproj" />
   </ItemGroup>
 
