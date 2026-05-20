@@ -2,7 +2,7 @@ using System.Net.Security;
 using System.Net.Sockets;
 using System.Text;
 
-namespace Laber.Bouncer.Irc;
+namespace Laber.Irc;
 
 public sealed class IrcClient : IAsyncDisposable
 {

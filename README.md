@@ -1,38 +1,45 @@
 # Laber
 
-IRC-Client mit **Backend-Bouncer** (immer online, sammelt Nachrichten) und **Ionic/Angular-PWA** (asynchroner Abruf, kein permanenter Client-Betrieb nötig). Orchestriert mit **.NET Aspire**.
+IRC-Bouncer und REST-API in **einer** .NET-Anwendung. Nachrichten werden als Plain-Text pro Kanal und Jahr gespeichert (`data/<kanal>/<jahr>.txt`). Connect/Disconnect-Ereignisse bleiben nur kurz im RAM.
+
+**Frontend:** Ionic 8 + Angular 21 PWA
 
 ## Struktur
 
 ```
 Laber.slnx
-Laber.AppHost/        # Aspire-Orchestrierung
-Laber.Api/            # REST-API für Sync
-Laber.Bouncer/        # IRC-Bouncer (Worker)
-Laber.ServiceDefaults/
-Laber.Shared/         # EF Core + DTOs
-Laber.Frontend/       # Ionic 8 + Angular 21 PWA
-data/                 # gemeinsame SQLite-DB (lokal, via AppHost)
+Laber/                 # eine Executable: IRC-Bouncer + REST-API
+Laber.Shared/          # DTOs, Dateiformat, Kanal-Pfade
+Laber.Frontend/        # Ionic PWA
+data/                  # Nachrichten-Logfiles (nicht in Git)
 ```
+
+## Dateiformat
+
+Pro Zeile eine Nachricht (Tab-getrennt):
+
+```
+2025-05-20T14:30:45.1234567+00:00\tsender\ttext
+```
+
+Sonderzeichen im Text werden escaped (`\n`, `\t`, `\\`).
+
+Beispiel-Pfad: `data/laber/2025.txt` für Kanal `#laber`.
 
 ## Voraussetzungen
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download)
-- [Node.js 22+](https://nodejs.org/)
+- [Node.js 22+](https://nodejs.org/) (nur für Frontend)
 
-## Start mit Aspire
+## Start
 
 ```bash
-dotnet run --project Laber.AppHost
+dotnet run --project Laber
 ```
 
-Das Aspire-Dashboard zeigt die Endpunkte für **api**, **bouncer** und **frontend**.
+Standard-URL: `http://localhost:5292`
 
-Die SQLite-Datenbank liegt unter `data/laber.db` (beide Backend-Services teilen sich die Datei).
-
-## IRC-Konfiguration (Bouncer)
-
-`Laber.Bouncer/appsettings.json`:
+### IRC (`Laber/appsettings.json`)
 
 ```json
 "Irc": {
@@ -44,16 +51,7 @@ Die SQLite-Datenbank liegt unter `data/laber.db` (beide Backend-Services teilen 
 }
 ```
 
-> Eindeutigen Nick wählen; für Libera ggf. SASL/Passwort ergänzen.
-
-## Frontend
-
-- **Ionic 8** + **Angular 21**
-- **Dark / Light / System**-Theme (Einstellungen)
-- **PWA** installierbar (`ng build` mit Service Worker)
-- Pollt `/api/messages` – letzte Message-ID wird lokal gespeichert
-
-### Nur Frontend (mit API-Proxy)
+### Frontend
 
 ```bash
 cd Laber.Frontend
@@ -61,20 +59,19 @@ npm install
 npm start
 ```
 
-API-URL in den Einstellungen oder `src/environments/environment.ts` anpassen. `proxy.conf.json` leitet `/api` an `http://localhost:5292` weiter.
+`proxy.conf.json` leitet `/api` an `http://localhost:5292` weiter.
 
-## API (Auszug)
+## API
 
 | Endpoint | Beschreibung |
 |----------|--------------|
-| `GET /api/status` | Bouncer-Verbindungsstatus |
-| `GET /api/channels?sinceId=` | Kanäle (+ optional ungelesen) |
-| `GET /api/messages/{channel}?afterId=` | Nachrichten eines Kanals |
-| `GET /api/messages?afterId=` | Alle neuen Nachrichten |
-
-## Sprache
-
-Anwendungscode (Api, Bouncer, Shared): **C# 10** (`LangVersion` 10). AppHost nutzt das Aspire-SDK (generierter Code benötigt neuere Sprachfeatures).
+| `GET /api/status` | aktueller IRC-Verbindungsstatus (RAM) |
+| `GET /api/events` | Connect/Disconnect der letzten 24h (RAM, max. 200) |
+| `GET /api/channels?sinceId=` | Kanäle aus dem `data/`-Verzeichnis |
+| `GET /api/messages/{channel}?limit=` | neueste Nachrichten (Standard 100) |
+| `GET /api/messages/{channel}?beforeId=` | ältere Nachrichten (Endless Scroll) |
+| `GET /api/messages/{channel}?afterId=` | neuere Nachrichten seit ID |
+| `GET /api/messages?afterId=` | neue Nachrichten aller Kanäle |
 
 ## Build
 

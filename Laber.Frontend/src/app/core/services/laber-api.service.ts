@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
   ChannelDto,
+  ConnectionEventDto,
   ConnectionStatusDto,
   MessageDto,
 } from '../models/laber.models';
@@ -28,14 +29,24 @@ export class LaberApiService {
     return this.http.get<ChannelDto[]>(this.url('/api/channels'), { params });
   }
 
-  getMessages(channel: string, afterId?: number, limit = 100): Observable<MessageDto[]> {
-    let params = new HttpParams().set('limit', String(limit));
-    if (afterId && afterId > 0) {
-      params = params.set('afterId', String(afterId));
+  getMessages(
+    channel: string,
+    options: { afterId?: number; beforeId?: number; limit?: number } = {}
+  ): Observable<MessageDto[]> {
+    let params = new HttpParams().set('limit', String(options.limit ?? 100));
+    if (options.afterId && options.afterId > 0) {
+      params = params.set('afterId', String(options.afterId));
+    }
+    if (options.beforeId && options.beforeId > 0) {
+      params = params.set('beforeId', String(options.beforeId));
     }
 
     const encoded = encodeURIComponent(channel.replace(/^#/, ''));
     return this.http.get<MessageDto[]>(this.url(`/api/messages/${encoded}`), { params });
+  }
+
+  getEvents(): Observable<ConnectionEventDto[]> {
+    return this.http.get<ConnectionEventDto[]>(this.url('/api/events'));
   }
 
   getAllMessages(afterId?: number, limit = 100): Observable<MessageDto[]> {

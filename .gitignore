@@ -11,11 +11,6 @@
 Laber.Frontend/www/
 Laber.Frontend/.angular/
 
-# SQLite
-*.db
-*.db-shm
-*.db-wal
-
 # OS
 .DS_Store
 Thumbs.db

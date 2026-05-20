@@ -21,4 +21,10 @@ export interface ConnectionStatusDto {
   lastError: string | null;
 }
 
+export interface ConnectionEventDto {
+  occurredAt: string;
+  kind: string;
+  detail: string | null;
+}
+
 export type ThemeMode = 'light' | 'dark' | 'system';
