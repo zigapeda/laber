@@ -1,0 +1,50 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Laber</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="refresh()">
+        <ion-icon slot="icon-only" name="refresh-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar *ngIf="status">
+    <ion-note>
+      Bouncer:
+      <strong>{{ status.isConnected ? 'online' : 'offline' }}</strong>
+      · {{ status.nick }}&#64;{{ status.server }}:{{ status.port }}
+    </ion-note>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <ion-list *ngIf="channels.length; else emptyState">
+    <ion-item
+      button
+      detail
+      *ngFor="let channel of channels"
+      (click)="openChannel(channel)"
+    >
+      <ion-label>
+        <h2>{{ channel.name }}</h2>
+        <p *ngIf="channel.lastMessageAt">
+          Letzte Nachricht: {{ channel.lastMessageAt | date: 'short' }}
+        </p>
+      </ion-label>
+      <ion-badge color="primary" *ngIf="channel.unreadCount > 0">
+        {{ channel.unreadCount }}
+      </ion-badge>
+    </ion-item>
+  </ion-list>
+
+  <ng-template #emptyState>
+    <div class="empty">
+      <ion-icon name="cloud-offline-outline"></ion-icon>
+      <p>Noch keine Kanäle oder Nachrichten vom Bouncer.</p>
+      <p class="hint">Der Bouncer bleibt online und sammelt IRC-Nachrichten.</p>
+    </div>
+  </ng-template>
+</ion-content>

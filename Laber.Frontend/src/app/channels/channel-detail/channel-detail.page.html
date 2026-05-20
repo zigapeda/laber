@@ -1,0 +1,35 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/channels"></ion-back-button>
+    </ion-buttons>
+    <ion-title>#{{ channel }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="loadLatest($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <ion-infinite-scroll
+    threshold="120px"
+    position="top"
+    [disabled]="!hasMoreHistory"
+    (ionInfinite)="loadOlder($event)"
+  >
+    <ion-infinite-scroll-content loadingText="Ältere Nachrichten laden…"></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+
+  <ion-list>
+    <ion-item *ngFor="let message of messages" lines="none">
+      <ion-label class="ion-text-wrap">
+        <h3>
+          <strong>{{ message.sender }}</strong>
+          <span class="message-time">{{ message.receivedAt | date: 'short' }}</span>
+        </h3>
+        <p>{{ message.text }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>

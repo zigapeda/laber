@@ -1,0 +1,56 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Einstellungen</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-list>
+    <ion-list-header>Erscheinungsbild</ion-list-header>
+    <ion-item>
+      <ion-label>Theme</ion-label>
+      <ion-select [value]="themeMode" (ionChange)="onThemeChange($event)" interface="popover">
+        <ion-select-option value="system">System</ion-select-option>
+        <ion-select-option value="light">Hell</ion-select-option>
+        <ion-select-option value="dark">Dunkel</ion-select-option>
+      </ion-select>
+    </ion-item>
+  </ion-list>
+
+  <ion-list>
+    <ion-list-header>API / Bouncer</ion-list-header>
+    <ion-item>
+      <ion-input
+        label="API Basis-URL"
+        labelPlacement="stacked"
+        [(ngModel)]="apiBaseUrl"
+        placeholder="http://localhost:5292"
+      ></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-button expand="block" (click)="saveApiUrl()">Speichern &amp; testen</ion-button>
+    </ion-item>
+    <ion-item *ngIf="status">
+      <ion-label class="ion-text-wrap">
+        <h3>Bouncer-Status</h3>
+        <p>
+          {{ status.isConnected ? 'Verbunden' : 'Getrennt' }} —
+          {{ status.nick }}&#64;{{ status.server }}:{{ status.port }}
+        </p>
+        <p *ngIf="status.lastError" color="danger">{{ status.lastError }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <ion-list>
+    <ion-list-header>PWA</ion-list-header>
+    <ion-item lines="none">
+      <ion-label class="ion-text-wrap">
+        <p>
+          Laber kann als Progressive Web App installiert werden. Nachrichten werden
+          vom Backend-Bouncer gesammelt und beim Öffnen der App synchronisiert.
+        </p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>
